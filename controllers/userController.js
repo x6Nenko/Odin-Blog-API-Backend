@@ -4,12 +4,18 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
+require('dotenv').config()
 
 
 exports.users_get = asyncHandler(async (req, res, next) => {
-  const allUsers = await User.find({}, "username").exec();
-
-  res.json({ title: "GET all users", users: allUsers })
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (authData && authData.userExists.is_author === true) {
+      const allUsers = await User.find({}, "username").exec();
+      res.json({ title: "GET all users", users: allUsers, user: req.user });
+    } else {
+      return res.sendStatus(403);
+    }
+  });
 });
 
 exports.users_post = [
@@ -100,7 +106,7 @@ exports.user_login = [
       if (userExists) {
         bcrypt.compare(req.body.password, userExists.password, function(err, result) {
           if (result) {
-            jwt.sign({userExists}, "secretkey", { expiresIn: '1d' }, (err, token) => {
+            jwt.sign({userExists}, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
               return res.json({ msg: 'Correct password', token: token })
             });
           } else {
@@ -115,9 +121,14 @@ exports.user_login = [
 ];
 
 exports.user_detail = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.userid).exec();
-
-  res.json({ title: "GET one user", user: user })
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (authData && authData.userExists.is_author === true) {
+      const user = await User.findById(req.params.userid).exec();
+      res.json({ title: "GET one user", user: user })
+    } else {
+      return res.sendStatus(403);
+    }
+  });
 });
 
 exports.user_edit = [
@@ -128,44 +139,56 @@ exports.user_edit = [
 
   // Process request after validation and sanitization.
   asyncHandler(async (req, res, next) => {
-    // Extract the validation errors from a request.
-    const errors = validationResult(req);
+    jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+      if (authData && authData.userExists.is_author === true) {
+        // Extract the validation errors from a request.
+        const errors = validationResult(req);
 
-    const user = {
-      username: req.body.username,
-    };
+        const user = {
+          username: req.body.username,
+        };
 
-    if (!errors.isEmpty()) {
-      // There are errors.
-      res.json({
-        msg: "Something is wrong",
-        user: user,
-        errors: errors.array(),
-      });
-      return;
-    } else {
-      // Data from form is valid.
-      const userExists = await User.findOne({ username: req.body.username }).exec();
-      if (userExists) {
-        res.json({
-          msg: "User exists",
-        });
+        if (!errors.isEmpty()) {
+          // There are errors.
+          res.json({
+            msg: "Something is wrong",
+            user: user,
+            errors: errors.array(),
+          });
+          return;
+        } else {
+          // Data from form is valid.
+          const userExists = await User.findOne({ username: req.body.username }).exec();
+          if (userExists) {
+            res.json({
+              msg: "User exists",
+            });
+          } else {
+            await User.findByIdAndUpdate(req.params.userid, user);
+            res.json({
+              msg: "User updated"
+            });
+          }
+        }
       } else {
-        await User.findByIdAndUpdate(req.params.userid, user);
-        res.json({
-          msg: "User updated"
-        });
+        return res.sendStatus(403);
       }
-    }
+    });
   }),
 ];
 
 exports.user_delete = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.userid).exec();
-  if (user) {
-    await User.findByIdAndDelete(req.params.userid).exec();
-    res.json({ msg: "User deleted" })
-  } else {
-    res.json({ msg: "There is no such user" })
-  }
+  jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
+    if (authData && authData.userExists.is_author === true) {
+      const user = await User.findById(req.params.userid).exec();
+      if (user) {
+        await User.findByIdAndDelete(req.params.userid).exec();
+        res.json({ msg: "User deleted" })
+      } else {
+        res.json({ msg: "There is no such user" })
+      }
+    } else {
+      return res.sendStatus(403);
+    }
+  });
 });
