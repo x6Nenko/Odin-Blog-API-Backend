@@ -6,8 +6,8 @@ const Schema = mongoose.Schema;
 const PostSchema = new Schema({
   title: { type: String, required: true, minLength: 1, maxLength: 40 },  
   text: { type: String, required: true, minLength: 1, maxLength: 1500 },
-  author: { type: Schema.Types.ObjectId, ref: "User", },
-  published: { type:Boolean }
+  author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  published: { type:Boolean, required: true }
 }, { timestamps: true });
 
 PostSchema.virtual("url").get(function () {
