@@ -9,7 +9,7 @@ exports.posts_get = asyncHandler(async (req, res, next) => {
 });
 
 exports.posts_post = asyncHandler(async (req, res, next) => {
-  res.json({ title: "Posts GET - not implemented" })
+  res.json({ title: "Posts POST - not implemented" })
 });
 
 exports.post_detail = asyncHandler(async (req, res, next) => {

@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
   username: { type: String, required: true, minLength: 3, maxLength: 40 },
-  password: { type: String, required: true, minLength: 3, maxLength: 1000 },
-  author: { type:Boolean },
+  password: { type: String, required: true, minLength: 3, maxLength: 100 },
+  is_author: { type:Boolean },
 });
 
 UserSchema.virtual("url").get(function () {
