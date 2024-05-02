@@ -10,6 +10,39 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+const jwt = require("jsonwebtoken");
+router.get("/protected", verifyToken, (req, res) => {
+  jwt.verify(req.token, 'secretkey', (err, authData) => {
+    if(err) {
+      res.sendStatus(403);
+    } else {
+      res.json({
+        message: 'Protected route accessed...',
+        authData
+      });
+    }
+  });
+});
+
+function verifyToken(req, res, next) {
+  // Get auth header value
+  const bearerHeader = req.headers['authorization'];
+  // Check if bearer is undefined
+  if(typeof bearerHeader !== 'undefined') {
+    // Split at the space
+    const bearer = bearerHeader.split(' ');
+    // Get token from array
+    const bearerToken = bearer[1];
+    // Set the token
+    req.token = bearerToken;
+    // Next middleware
+    next();
+  } else {
+    // Forbidden
+    res.sendStatus(403);
+  }
+};
+
 
 // USER ROUTES
 
@@ -18,6 +51,8 @@ router.get("/users", user_controller.users_get);
 
 // POST request create new user
 router.post("/users", user_controller.users_post);
+
+router.post("/login", user_controller.user_login)
 
 // GET request for one User.
 router.get("/users/:userid", user_controller.user_detail);

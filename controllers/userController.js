@@ -3,6 +3,7 @@ const User = require("../models/User");
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
 
 
 exports.users_get = asyncHandler(async (req, res, next) => {
@@ -65,6 +66,49 @@ exports.users_post = [
           // Handle any errors
           return next(err);
         }
+      }
+    }
+  }),
+];
+
+/* Login. */
+exports.user_login = [
+  body("username", "Username must contain at least 3 characters")
+    .trim()
+    .isLength({ min: 3, max: 40 })
+    .escape(),
+  body("password", "Password must be more than 3 symbols.")
+    .trim()
+    .isLength({ min: 3, max: 100 }),
+
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      // There are errors.
+      res.json({
+        msg: "Something is wrong",
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid.
+      const userExists = await User.findOne({ username: req.body.username }).exec();
+
+      if (userExists) {
+        bcrypt.compare(req.body.password, userExists.password, function(err, result) {
+          if (result) {
+            jwt.sign({userExists}, "secretkey", { expiresIn: '1d' }, (err, token) => {
+              return res.json({ msg: 'Correct password', token: token })
+            });
+          } else {
+            return res.json({ msg: 'Wrong password', err: err })
+          }
+        });
+      } else {
+        return res.status(401).json({ msg: "Auth Failed" })
       }
     }
   }),
