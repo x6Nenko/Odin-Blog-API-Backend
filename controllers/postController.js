@@ -67,45 +67,45 @@ exports.post_detail = asyncHandler(async (req, res, next) => {
 
 exports.post_edit = [
   body("title", "Title must be between 1 - 40 characters")
-  .trim()
-  .isLength({ min: 1, max: 40 })
-  .escape(),
-body("text", "Text must be between 1 - 1500 characters")
-  .trim()
-  .isLength({ min: 1, max: 1500 })
-  .escape(),
-body('published', "Published field must be selected.")
-  .trim()
-  .escape(),
+    .trim()
+    .isLength({ min: 1, max: 40 })
+    .escape(),
+  body("text", "Text must be between 1 - 1500 characters")
+    .trim()
+    .isLength({ min: 1, max: 1500 })
+    .escape(),
+  body('published', "Published field must be selected.")
+    .trim()
+    .escape(),
 
-// Process request after validation and sanitization.
-asyncHandler(async (req, res, next) => {
-  // Extract the validation errors from a request.
-  const errors = validationResult(req);
+  // Process request after validation and sanitization.
+  asyncHandler(async (req, res, next) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
 
-  // Create a post object with escaped and trimmed data.
-  const post = {
-    title: req.body.title,
-    text: req.body.text,
-    published: req.body.published,
-  };
+    // Create a post object with escaped and trimmed data.
+    const post = {
+      title: req.body.title,
+      text: req.body.text,
+      published: req.body.published,
+    };
 
-  if (!errors.isEmpty()) {
-    // There are errors.
-    res.json({
-      msg: "Something is wrong",
-      post: post,
-      errors: errors.array(),
-    });
-    return;
-  } else {
-    // Data from form is valid.
-    await Post.findByIdAndUpdate(req.params.postid, post);
-    res.json({
-      msg: "Post updated"
-    });
-  }
-}),
+    if (!errors.isEmpty()) {
+      // There are errors.
+      res.json({
+        msg: "Something is wrong",
+        post: post,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid.
+      await Post.findByIdAndUpdate(req.params.postid, post);
+      res.json({
+        msg: "Post updated"
+      });
+    }
+  }),
 ];
 
 exports.post_delete = asyncHandler(async (req, res, next) => {
