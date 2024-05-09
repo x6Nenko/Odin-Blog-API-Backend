@@ -10,7 +10,7 @@ require('dotenv').config()
 exports.posts_get = asyncHandler(async (req, res, next) => {
   jwt.verify(req.token, process.env.JWT_SECRET, async (err, authData) => {
     if (authData && authData.userExists.is_author === true) {
-      const allPosts = await Post.find().populate("author").exec();
+      const allPosts = await Post.find().populate("author").sort({ createdAt: -1 }).exec();
       return res.json({ title: "GET all posts", posts: allPosts })
     } else {
       const allPosts = await Post.find({ published: true }).populate({ path: 'author', select: '-_id username' }).exec();

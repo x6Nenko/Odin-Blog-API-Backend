@@ -46,9 +46,8 @@ exports.users_post = [
 
     if (!errors.isEmpty()) {
       // There are errors.
-      res.json({
+      res.status(400).json({
         msg: "Something is wrong",
-        user: user,
         errors: errors.array(),
       });
       return;
@@ -56,8 +55,8 @@ exports.users_post = [
       // Data from form is valid.
       const userExists = await User.findOne({ username: req.body.username }).exec();
       if (userExists) {
-        res.json({
-          msg: "User exists",
+        res.status(409).json({
+          msg: "This username already exists",
         });
       } else {
         try {
@@ -94,7 +93,7 @@ exports.user_login = [
 
     if (!errors.isEmpty()) {
       // There are errors.
-      res.json({
+      res.status(400).json({
         msg: "Something is wrong",
         errors: errors.array(),
       });
@@ -110,7 +109,7 @@ exports.user_login = [
               return res.json({ msg: 'Correct password', token: token })
             });
           } else {
-            return res.json({ msg: 'Wrong password', err: err })
+            return res.status(401).json({ msg: 'Wrong password', err: err })
           }
         });
       } else {

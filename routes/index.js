@@ -34,7 +34,7 @@ router.get("/protected", verifyToken, (req, res) => {
 router.get("/users", verifyToken, user_controller.users_get);
 
 // POST request create new user
-router.post("/users", user_controller.users_post);
+router.post("/registration", user_controller.users_post);
 
 router.post("/login", user_controller.user_login)
 
