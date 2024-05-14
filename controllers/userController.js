@@ -106,7 +106,7 @@ exports.user_login = [
         bcrypt.compare(req.body.password, userExists.password, function(err, result) {
           if (result) {
             jwt.sign({userExists}, process.env.JWT_SECRET, { expiresIn: '1d' }, (err, token) => {
-              return res.json({ msg: 'Correct password', token: token })
+              return res.json({ msg: 'Correct password', token: token, author: userExists.is_author })
             });
           } else {
             return res.status(401).json({ msg: 'Wrong password', err: err })

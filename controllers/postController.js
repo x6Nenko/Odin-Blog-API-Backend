@@ -13,7 +13,7 @@ exports.posts_get = asyncHandler(async (req, res, next) => {
       const allPosts = await Post.find().populate("author").sort({ createdAt: -1 }).exec();
       return res.json({ title: "GET all posts", posts: allPosts })
     } else {
-      const allPosts = await Post.find({ published: true }).populate({ path: 'author', select: '-_id username' }).exec();
+      const allPosts = await Post.find({ published: true }).populate({ path: 'author', select: '-_id username' }).sort({ createdAt: -1 }).exec();
       return res.json({ title: "GET all posts", posts: allPosts })
     }
   });
